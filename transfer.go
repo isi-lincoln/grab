@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/cavaliercoder/grab/bps"
+	"github.com/isi-lincoln/grab/bps"
 )
 
 type transfer struct {
@@ -41,7 +41,7 @@ func (c *transfer) copy() (written int64, err error) {
 
 	// start the transfer
 	if c.b == nil {
-		c.b = make([]byte, 32*1024)
+		c.b = make([]byte, 64*1024)
 	}
 	for {
 		select {
@@ -51,37 +51,22 @@ func (c *transfer) copy() (written int64, err error) {
 		default:
 			// keep working
 		}
-		nr, er := c.r.Read(c.b)
-		if nr > 0 {
-			nw, ew := c.w.Write(c.b[0:nr])
-			if nw > 0 {
-				written += int64(nw)
-				atomic.StoreInt64(&c.n, written)
-			}
-			if ew != nil {
-				err = ew
-				break
-			}
-			if nr != nw {
-				err = io.ErrShortWrite
-				break
-			}
-			// wait for rate limiter
-			if c.lim != nil {
-				err = c.lim.WaitN(c.ctx, nr)
-				if err != nil {
-					return
-				}
-			}
-		}
+
+		nr, er := io.Copy(c.w, c.r)
 		if er != nil {
 			if er != io.EOF {
 				err = er
 			}
-			break
+			return
+		}
+		//nr, er := c.r.Read(c.b)
+		if nr > 0 {
+			//nw, ew := c.w.Write(c.b[0:nr])
+			written += int64(nw)
+			atomic.StoreInt64(&c.n, written)
 		}
 	}
-	return written, err
+	return
 }
 
 // N returns the number of bytes transferred.
