@@ -39,9 +39,11 @@ func (c *transfer) copy() (written int64, err error) {
 	defer cancel()
 	go bps.Watch(ctx, c.gauge, c.N, time.Second)
 
+	chunk := int64(1024 * 1024)
+
 	// start the transfer
 	if c.b == nil {
-		c.b = make([]byte, 64*1024)
+		c.b = make([]byte, chunk)
 	}
 	for {
 		select {
@@ -52,16 +54,14 @@ func (c *transfer) copy() (written int64, err error) {
 			// keep working
 		}
 
-		nr, er := io.Copy(c.w, c.r)
+		nr, er := io.CopyN(c.w, c.r, chunk)
 		if er != nil {
 			if er != io.EOF {
 				err = er
 			}
 			return
 		}
-		//nr, er := c.r.Read(c.b)
 		if nr > 0 {
-			//nw, ew := c.w.Write(c.b[0:nr])
 			written += int64(nr)
 			atomic.StoreInt64(&c.n, written)
 		}
