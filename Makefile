@@ -4,7 +4,7 @@ GOGET = $(GO) get -u
 all: build/grab
 
 build/grab: build
-	go build -x -o grab cmd/grab/main.go
+	go build -o $@ cmd/grab/main.go
 
 build:
 	mkdir build

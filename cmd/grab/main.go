@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/isilincoln/grab/grabui"
+	"github.com/isi-lincoln/grab/grabui"
 )
 
 func main() {
