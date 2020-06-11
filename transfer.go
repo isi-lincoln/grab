@@ -62,7 +62,7 @@ func (c *transfer) copy() (written int64, err error) {
 		//nr, er := c.r.Read(c.b)
 		if nr > 0 {
 			//nw, ew := c.w.Write(c.b[0:nr])
-			written += int64(nw)
+			written += int64(nr)
 			atomic.StoreInt64(&c.n, written)
 		}
 	}
